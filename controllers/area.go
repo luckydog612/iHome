@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"iHome/models"
+	. "iHome/models"
 )
 
 type AreaController struct {
@@ -19,17 +19,17 @@ func (c *AreaController) GetAreas() {
 	var resp = make(map[string]interface{})
 	defer c.ReturnData(resp)
 	// 从数据库中取出数据
-	areas := make([]*models.Area, 0)
+	areas := make([]*Area, 0)
 	o := orm.NewOrm()
 	num, err := o.QueryTable("area").All(&areas)
 	if err != nil {
 		beego.Error("query num = ", num, "err: ", err)
-		resp["errno"] = "4001"
-		resp["errmsg"] = "query failed"
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
 		return
 	}
 	beego.Info("query num = ", num)
-	resp["errno"] = "0"
-	resp["errmsg"] = "ok"
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
 	resp["data"] = &areas
 }

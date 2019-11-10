@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"iHome/models"
+	. "iHome/models"
 )
 
 type UserController struct {
@@ -31,16 +31,19 @@ func (c *UserController) Register() {
 	//password:"111"
 	//sms_code:"111"
 	o := orm.NewOrm()
-	user := models.User{}
+	user := User{}
 	user.Mobile = req["mobile"].(string)
 	user.Password_hash = req["password"].(string)
+	user.Name = user.Mobile
 	id, err := o.InsertOrUpdate(&user)
 	if err != nil {
-		resp["errno"] = "4001"
-		resp["errmsg"] = "register failed"
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
 		return
 	}
 	beego.Info("register success id = ", id)
-	resp["errno"] = 0
-	resp["errmsg"] = "register success"
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+
+	c.SetSession("name", user.Name)
 }
