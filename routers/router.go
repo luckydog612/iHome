@@ -11,4 +11,5 @@ func init() {
     beego.Router("/api/v1.0/houses/index", &controllers.HouseIndexController{},"get:GetHouseIndex")
     beego.Router("/api/v1.0/session", &controllers.SessionController{},"get:GetSessionData;delete:DeleteSessionData")
     beego.Router("/api/v1.0/users", &controllers.UserController{},"post:Register")
+	beego.Router("/api/v1.0/sessions", &controllers.SessionController{},"post:Login")
 }
