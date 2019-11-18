@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	. "iHome/models"
+	"path"
 )
 
 type UserController struct {
@@ -46,4 +48,64 @@ func (c *UserController) Register() {
 	resp["errmsg"] = RecodeText(RECODE_OK)
 
 	c.SetSession("name", user.Name)
+}
+
+func (c *UserController) UpdateAvatar() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	f, h, err := c.GetFile("avatar")
+	if err != nil {
+		beego.Error("get avatar file err ", err)
+		resp["errno"] = RECODE_REQERR
+		resp["errmsg"] = RecodeText(RECODE_REQERR)
+		return
+	}
+
+	suffix := path.Ext(h.Filename)
+	fmt.Println(h.Filename)
+	fmt.Println(suffix)
+	if suffix != ".gif" && suffix != ".jpg" && suffix != ".png" && suffix != ".jpeg" {
+		beego.Error("file format err: ", suffix, " gif jpg png jpeg requested")
+		resp["errno"] = RECODE_REQERR
+		resp["errmsg"] = RecodeText(RECODE_REQERR)
+		return
+	}
+
+	buffer := make([]byte, h.Size)
+	num, err := f.Read(buffer)
+	if err != nil {
+		beego.Error("出错啦！", num, err)
+	}
+	// 暂时不转为哈希
+	//avatarName := utils.HashName(buffer)
+	//fmt.Println(string(avatarName))
+	//fmt.Println(avatarName)
+	defer f.Close()
+	err = c.SaveToFile("avatar", "static/upload/"+h.Filename) // 保存位置在 static/upload, 没有文件夹要先创建
+	if err != nil {
+		beego.Error("save avatar file err ", err)
+		resp["errno"] = RECODE_REQERR
+		resp["errmsg"] = RecodeText(RECODE_REQERR)
+		return
+	}
+	user := User{}
+	user_id := c.GetSession("user_id")
+	fmt.Println("user_id",user_id)
+	o := orm.NewOrm()
+	err = o.QueryTable("user").Filter("user_id", user_id).One(&user)
+	if err != nil {
+		beego.Error("查无此人", user_id)
+	}
+	avatar_url := fmt.Sprintf("127.0.0.1:8080/static/upload/%s", h.Filename)
+	user.Avatar_url = avatar_url
+	col, err := o.Update(&user)
+	if err != nil {
+		beego.Error("col: ", col, "err: ", err)
+	}
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+	repData := make(map[string]string)
+	repData["avatar_url"] = avatar_url
+	resp["data"] = repData
 }
