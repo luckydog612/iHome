@@ -93,7 +93,7 @@ func (c *UserController) UpdateAvatar() {
 	user_id := c.GetSession("user_id")
 	fmt.Println("user_id",user_id)
 	o := orm.NewOrm()
-	err = o.QueryTable("user").Filter("user_id", user_id).One(&user)
+	err = o.QueryTable("user").Filter("id", user_id).One(&user)
 	if err != nil {
 		beego.Error("查无此人", user_id)
 	}
