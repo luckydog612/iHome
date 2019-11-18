@@ -20,38 +20,38 @@ func init() {
 /* 用户 table_name = user */
 type User struct {
 	Id            int            `json:"user_id"`                         //用户编号
-	Name          string         `orm:"size(32);unique"	json:"name"`   //用户昵称
-	Password_hash string         `orm:"size(128)"	json:"password"`     //用户密码加密的
-	Mobile        string         `orm:"size(11)"		json:"mobile"`    //手机号
-	Real_name     string         `orm:"size(32)"		json:"real_name"` //真实姓名
-	Id_card       string         `orm:"size(20)"		json:"id_card"`   //身份证号
-	Avatar_url    string         `orm:"size(256)"	json:"avatar_url"`   //用户头像路径
-	Houses        [] *House      `orm:"reverse(many)"	json:"houses"`   //用户发布的房屋信息
-	Orders        [] *OrderHouse `orm:"reverse(many)"	json:"orders"`   //用户下的订单
+	Name          string         `json:"name" orm:"size(32);unique"`      //用户昵称
+	Password_hash string         `json:"password" orm:"size(128)"`        //用户密码加密的
+	Mobile        string         `json:"mobile" orm:"size(11)"`    //手机号
+	Real_name     string         `json:"real_name" orm:"size(32)"` //真实姓名
+	Id_card       string         `json:"id_card" orm:"size(20)"`   //身份证号
+	Avatar_url    string         `json:"avatar_url" orm:"size(256)"`   //用户头像路径
+	Houses        [] *House      `json:"houses" orm:"reverse(many)"`   //用户发布的房屋信息
+	Orders        [] *OrderHouse `json:"orders" orm:"reverse(many)"`   //用户下的订单
 }
 
 /* 户层信息 table_name = house */
 type House struct {
 	Id              int            `json:"house_id"`                                             //房屋编号
-	User            *User          `orm:"rel(fk)"	json:"user_id"`                             //房屋主人的用户编号
-	Area            *Area          `orm:"rel(fk)"	json:"area_id"`                             //归属地的区域编号
-	Title           string         `orm:"size(64)"	json:"title"`                              //房屋标题
-	Price           int            `orm:"default(0)"	json:"price"`                            //单价，单位：分
-	Address         string         `orm:"size(512)" orm:"default("")" json:"address"`            //地址
-	Room_count      int            `orm:"default(1)"	json:"room_count"`                       //房间数目
-	Acreage         int            `orm:"default(0)"	json:"acreage"`                          //房屋总面积
-	Unit            string         `orm:"size(32)" orm:"default("")"	json:"unit"`             //房屋单元，如 几室几厅
-	Capacity        int            `orm:"default(1)"	json:"capacity"`                         //房屋容纳的总人数
-	Beds            string         `orm:"size(64)"	orm:"default("")"	json:"beds"`          //房屋床铺的位置
-	Deposit         int            `orm:"default(0)"	json:"deposit"`                          //押金
-	Min_days        int            `orm:"default(1)"	json:"min_days"`                         //最少入住天数
-	Max_days        int            `orm:"default(0)"	json:"max_days"`                         //最多住天数 0表示不限制
-	Order_count     int            `orm:"default(0)"	json:"order_count"`                      //预定完成的该房屋的订单数
-	Index_image_url string         `orm:"size(256)" orm:"default("")"	json:"index_image_url"` //房屋主图片路径
-	Facilities      [] *Facility   `orm:"reverse(many)"	json:"facilities"`                    //房屋设施
-	Images          [] *HouseImage `orm:"reverse(many)"	json:"img_urls"`                      //房屋的图片
-	Orders          [] *OrderHouse `orm:"reverse(many)"	json:"orders"`                        //房屋的订单
-	Ctime           time.Time      `orm:"auto_now_add;type(datetime)"	json:"ctime"`
+	User            *User          `json:"user_id" orm:"rel(fk)"`                             //房屋主人的用户编号
+	Area            *Area          `json:"area_id" orm:"rel(fk)"`                             //归属地的区域编号
+	Title           string         `json:"title" orm:"size(64)"`                              //房屋标题
+	Price           int            `json:"price" orm:"default(0)"`                            //单价，单位：分
+	Address         string         `json:"address" orm:"size(512)" orm:"default("")"`            //地址
+	Room_count      int            `json:"room_count" orm:"default(1)"`                       //房间数目
+	Acreage         int            `json:"acreage" orm:"default(0)"`                          //房屋总面积
+	Unit            string         `json:"unit" orm:"size(32)" orm:"default("")"`             //房屋单元，如 几室几厅
+	Capacity        int            `json:"capacity" orm:"default(1)"`                         //房屋容纳的总人数
+	Beds            string         `json:"beds" orm:"size(64)"	orm:"default("")"`          //房屋床铺的位置
+	Deposit         int            `json:"deposit" orm:"default(0)"`                          //押金
+	Min_days        int            `json:"min_days" orm:"default(1)"`                         //最少入住天数
+	Max_days        int            `json:"max_days" orm:"default(0)"`                         //最多住天数 0表示不限制
+	Order_count     int            `json:"order_count" orm:"default(0)"`                      //预定完成的该房屋的订单数
+	Index_image_url string         `json:"index_image_url" orm:"size(256)" orm:"default("")"` //房屋主图片路径
+	Facilities      [] *Facility   `json:"facilities" orm:"reverse(many)"`                    //房屋设施
+	Images          [] *HouseImage `json:"img_urls" orm:"reverse(many)"`                      //房屋的图片
+	Orders          [] *OrderHouse `json:"orders" orm:"reverse(many)"`                        //房屋的订单
+	Ctime           time.Time      `json:"ctime" orm:"auto_now_add;type(datetime)"`
 }
 
 //首页最高展示的房屋数量
@@ -63,7 +63,7 @@ var HOUSE_LIST_PAGE_CAPACITY int = 2
 /* 区域信息 table_name = area */
 type Area struct {
 	Id   int    `json:"aid"`                  //区域编号
-	Name string `orm:"size(32)" json:"aname"` //区域名字
+	Name string `json:"aname" orm:"size(32)"` //区域名字
 }
 
 /* 设施信息 table_name = "facility" */
@@ -76,8 +76,8 @@ type Facility struct {
 /* 房屋图片 table_name = "house_image" */
 type HouseImage struct {
 	Id    int    `json:"house_image_id"`         //图片id
-	Url   string `orm:"size(256)" json:"url"`    //图片url
-	House *House `orm:"rel(fk)" json:"house_id"` //图片所属房屋编号
+	Url   string `json:"url" orm:"size(256)"`    //图片url
+	House *House `json:"house_id" orm:"rel(fk)"` //图片所属房屋编号
 }
 
 /* 订单状态常量 */
@@ -94,8 +94,8 @@ const (
 /*  订单 table_name = order */
 type OrderHouse struct {
 	Id          int       `json:"order_id"`                  //订单编号
-	User        *User     `orm:"rel(fk)"	json:"user_id"`  //下单的用户编号
-	House       *House    `orm:"rel(fk)"	json:"house_id"` //预定的房间编号
+	User        *User     `json:"user_id" orm:"rel(fk)"`  //下单的用户编号
+	House       *House    `json:"house_id" orm:"rel(fk)"` //预定的房间编号
 	Begin_data  time.Time `orm:"type(datetime)"`             //预定的起始时间
 	End_data    time.Time `orm:"type(datetime)"`             //预定的结束时间
 	Days        int       //预定总天数
@@ -103,5 +103,5 @@ type OrderHouse struct {
 	Amount      int       //订单总金额
 	Status      string    `orm:"default(WAIT_ACCEPT)"`                        //订单状态
 	Comment     string    `orm:"size(512)"`                                   //订单评论
-	Ctime       time.Time `orm:"auto_now_add;type(datetime)"	json:"ctime"` //
+	Ctime       time.Time `json:"ctime" orm:"auto_now_add;type(datetime)"` //
 }
