@@ -48,6 +48,8 @@ func (c *UserController) Register() {
 	resp["errmsg"] = RecodeText(RECODE_OK)
 
 	c.SetSession("name", user.Name)
+	c.SetSession("mobile", user.Mobile)
+	c.SetSession("user_id", id)
 }
 
 func (c *UserController) UpdateAvatar() {
@@ -91,7 +93,7 @@ func (c *UserController) UpdateAvatar() {
 	}
 	user := User{}
 	user_id := c.GetSession("user_id")
-	fmt.Println("user_id",user_id)
+	fmt.Println("user_id", user_id)
 	o := orm.NewOrm()
 	err = o.QueryTable("user").Filter("id", user_id).One(&user)
 	if err != nil {
@@ -108,4 +110,65 @@ func (c *UserController) UpdateAvatar() {
 	repData := make(map[string]string)
 	repData["avatar_url"] = avatar_url
 	resp["data"] = repData
+}
+
+func (c *UserController) GetUserData() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	// 1.从session中获取用户的user_id
+	user_id := c.GetSession("user_id")
+	user := User{Id: user_id.(int)}
+	// 2.通过user_id获取数据库中的user信息
+	o := orm.NewOrm()
+	err := o.Read(&user)
+	if err != nil {
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+	resp["data"] = user
+}
+
+func (c *UserController) UpdateUserName() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	// 1.获取session中的user_id
+	user_id := c.GetSession("user_id")
+	// 2. 获取前端传过来的消息
+	reqBody := make(map[string]string)
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqBody)
+	if err != nil {
+		beego.Error("unmarshal userName err: ", err)
+		resp["errno"] = RECODE_DATAERR
+		resp["errmsg"] = RecodeText(RECODE_DATAERR)
+		return
+	}
+	// 3. 更新user_id对应的name
+	userName := reqBody["name"]
+	o := orm.NewOrm()
+	user := User{}
+	user.Name = userName
+	user.Id = int(user_id.(int64))
+	err = o.QueryTable("user").Filter("id", user.Id).One(&user)
+	if err != nil {
+		beego.Error("query user err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+	user.Name = userName
+	col, err := o.Update(&user)
+	if err != nil || col <= 0 {
+		beego.Error("update userName to db err: ", err)
+	}
+	// 4. 把session中的name更新
+	c.SetSession("name", userName)
+	// 5. 将数据返回前端
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+	resp["data"] = reqBody
 }
