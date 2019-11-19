@@ -15,4 +15,5 @@ func init() {
 	beego.Router("/api/v1.0/user/avatar", &controllers.UserController{},"post:UpdateAvatar")
 	beego.Router("/api/v1.0/user", &controllers.UserController{},"get:GetUserData")
 	beego.Router("/api/v1.0/user/name", &controllers.UserController{},"put:UpdateUserName")
+	beego.Router("/api/v1.0/user/auth", &controllers.UserController{},"get:GetUserData;post:AuthRealName")
 }

@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	. "iHome/models"
+	"iHome/utils"
 	"time"
 )
 
@@ -13,6 +15,8 @@ type AreaController struct {
 }
 
 func (c *AreaController) ReturnData(resp map[string]interface{}) {
+	data, _ := json.Marshal(resp)
+	fmt.Println(string(data))
 	c.Data["json"] = resp
 	c.ServeJSON()
 }
@@ -24,9 +28,10 @@ func (c *AreaController) GetAreas() {
 	rAreas := RedisCon.Get("areas")
 	if rAreas != nil {
 		beego.Info("have got areas info from redis", rAreas)
+		//data,_ := json.Marshal(string(rAreas.([]uint8)))
 		resp["errno"] = RECODE_OK
 		resp["errmsg"] = RecodeText(RECODE_OK)
-		resp["data"] = rAreas
+		resp["data"] = utils.UniCodeToString(string(rAreas.([]uint8)))
 		return
 	}
 	// 从数据库中取出数据

@@ -58,17 +58,17 @@ func (c *SessionController) Login() {
 		resp["errmsg"] = RecodeText(RECODE_REQERR)
 		return
 	}
-	userName := req["mobile"].(string)
+	mobile := req["mobile"].(string)
 	password := req["password"].(string)
 	// 2.校验数据
-	if userName == "" || password == "" {
+	if mobile == "" || password == "" {
 		resp["errno"] = RECODE_REQERR
 		resp["errmsg"] = RecodeText(RECODE_REQERR)
 		return
 	}
-	user := User{Name: userName}
+	user := User{Mobile: mobile}
 	o := orm.NewOrm()
-	err = o.QueryTable("user").Filter("name", user.Name).One(&user)
+	err = o.QueryTable("user").Filter("mobile", user.Mobile).One(&user)
 	if err != nil {
 		beego.Error("login query db err: ", err)
 		resp["errno"] = RECODE_DBERR
