@@ -31,7 +31,7 @@ func (c *AreaController) GetAreas() {
 		//data,_ := json.Marshal(string(rAreas.([]uint8)))
 		resp["errno"] = RECODE_OK
 		resp["errmsg"] = RecodeText(RECODE_OK)
-		resp["data"] = utils.UniCodeToString(string(rAreas.([]uint8)))
+		resp["data"] = utils.StringToAreas(string(rAreas.([]uint8)))
 		return
 	}
 	// 从数据库中取出数据
