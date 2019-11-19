@@ -152,7 +152,7 @@ func (c *UserController) UpdateUserName() {
 	o := orm.NewOrm()
 	user := User{}
 	user.Name = userName
-	user.Id = int(user_id.(int64))
+	user.Id = user_id.(int)
 	err = o.QueryTable("user").Filter("id", user.Id).One(&user)
 	if err != nil {
 		beego.Error("query user err: ", err)
@@ -171,4 +171,48 @@ func (c *UserController) UpdateUserName() {
 	resp["errno"] = RECODE_OK
 	resp["errmsg"] = RecodeText(RECODE_OK)
 	resp["data"] = reqBody
+}
+
+func (c *UserController) AuthRealName() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	// 1.获取session中的user_id
+	user_id := c.GetSession("user_id")
+	// 2. 解析前端传送过来的数据
+	var reqBody = make(map[string]string)
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqBody)
+	if err != nil {
+		beego.Error("AuthRealName unmarshal request body err: ", err)
+		resp["errno"] = RECODE_DATAERR
+		resp["errmsg"] = RecodeText(RECODE_DATAERR)
+		return
+	}
+	// 3. 查询数据库数据
+	user := User{}
+	user.Id = user_id.(int)
+	o := orm.NewOrm()
+	if err = o.Read(&user); err != nil {
+		beego.Error("AuthRealName query user err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+
+	// 4. 更新数据到数据库
+	user.Real_name = reqBody["real_name"]
+	user.Id_card = reqBody["id_card"]
+	col, err := o.Update(&user)
+	if err != nil || col <= 0 {
+		beego.Error("update auth info to db err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+
+	// 4. 把session中的name更新
+	c.SetSession("user_id", user.Id)
+	// 5. 将数据返回前端
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
 }

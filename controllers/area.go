@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	. "iHome/models"
@@ -15,8 +14,6 @@ type AreaController struct {
 }
 
 func (c *AreaController) ReturnData(resp map[string]interface{}) {
-	data, _ := json.Marshal(resp)
-	fmt.Println(string(data))
 	c.Data["json"] = resp
 	c.ServeJSON()
 }
