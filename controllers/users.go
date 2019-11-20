@@ -7,6 +7,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	. "iHome/models"
 	"path"
+	"strconv"
+	"time"
 )
 
 type UserController struct {
@@ -215,4 +217,105 @@ func (c *UserController) AuthRealName() {
 	// 5. 将数据返回前端
 	resp["errno"] = RECODE_OK
 	resp["errmsg"] = RecodeText(RECODE_OK)
+}
+
+func (c *UserController) GetUserHousesData() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	// 1. 获取用户的user_id
+	user_id := c.GetSession("user_id")
+	// 2. 查询数据库
+	houses := make([]House, 0)
+	o := orm.NewOrm()
+	qs := o.QueryTable("house")
+	num, err := qs.Filter("user__id", user_id).All(&houses)
+	if err != nil {
+		beego.Error("GetHousesData query houses err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+
+	if num == 0 {
+		beego.Error("user have no houses, user_id = ", user_id)
+		resp["errno"] = RECODE_NODATA
+		resp["errmsg"] = RecodeText(RECODE_NODATA)
+		return
+	}
+	// 3. 返回结果
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+	resp["houses"] = houses
+}
+
+func (c *UserController) PostHousesData() {
+	var resp = make(map[string]interface{})
+	defer c.ReturnData(resp)
+
+	user_id := c.GetSession("user_id")
+
+	// 解析前端发来的数据
+	reqBody := make(map[string]interface{})
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqBody)
+	if err != nil {
+		beego.Error("AuthRealName unmarshal request body err: ", err)
+		resp["errno"] = RECODE_DATAERR
+		resp["errmsg"] = RecodeText(RECODE_DATAERR)
+		return
+	}
+
+	user := User{Id: user_id.(int)}
+	house := House{}
+	house.Title = reqBody["title"].(string)
+	house.Unit = reqBody["uint"].(string)
+	house.Address = reqBody["address"].(string)
+
+	house.User = &user
+	area_id, _ := strconv.Atoi(reqBody["area_id"].(string))
+	house.Area = &Area{Id: area_id}
+	acreage, _ := strconv.Atoi(reqBody["acreage"].(string))
+	house.Acreage = acreage
+	room_count, _ := strconv.Atoi(reqBody["room_count"].(string))
+	house.Room_count = room_count
+	price, _ := strconv.Atoi(reqBody["price"].(string))
+	house.Price = price
+	capacity, _ := strconv.Atoi(reqBody["capacity"].(string))
+	house.Capacity = capacity
+	house.Beds = reqBody["beds"].(string)
+	deposit, _ := strconv.Atoi(reqBody["deposit"].(string))
+	min_day, _ := strconv.Atoi(reqBody["min_day"].(string))
+	max_day, _ := strconv.Atoi(reqBody["max_day"].(string))
+	house.Deposit = deposit
+	house.Min_days = min_day
+	house.Max_days = max_day
+	house.Ctime = time.Now()
+
+	facility := make([]*Facility, 0)
+	for _, fac := range reqBody["facility"].([]string) {
+		f_id, _ := strconv.Atoi(fac)
+		faci := &Facility{Id: f_id}
+		facility = append(facility, faci)
+	}
+	house.Facilities = facility
+	o := orm.NewOrm()
+	house_id, err := o.Insert(&house)
+	if err != nil {
+		beego.Error("GetHousesData insert houses err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+	m2m := o.QueryM2M(&house, "Facility")
+	num, err := m2m.Add(&facility)
+	if num == 0 || err != nil {
+		beego.Error("GetHousesData insert facility err: ", err)
+		resp["errno"] = RECODE_DBERR
+		resp["errmsg"] = RecodeText(RECODE_DBERR)
+		return
+	}
+	repsData := make(map[string]int64)
+	resp["errno"] = RECODE_OK
+	resp["errmsg"] = RecodeText(RECODE_OK)
+	repsData["house_id"] = house_id
 }
