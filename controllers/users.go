@@ -268,7 +268,7 @@ func (c *UserController) PostHousesData() {
 	user := User{Id: user_id.(int)}
 	house := House{}
 	house.Title = reqBody["title"].(string)
-	house.Unit = reqBody["uint"].(string)
+	house.Unit = reqBody["unit"].(string)
 	house.Address = reqBody["address"].(string)
 
 	house.User = &user
@@ -284,16 +284,16 @@ func (c *UserController) PostHousesData() {
 	house.Capacity = capacity
 	house.Beds = reqBody["beds"].(string)
 	deposit, _ := strconv.Atoi(reqBody["deposit"].(string))
-	min_day, _ := strconv.Atoi(reqBody["min_day"].(string))
-	max_day, _ := strconv.Atoi(reqBody["max_day"].(string))
+	min_day, _ := strconv.Atoi(reqBody["min_days"].(string))
+	max_day, _ := strconv.Atoi(reqBody["max_days"].(string))
 	house.Deposit = deposit
 	house.Min_days = min_day
 	house.Max_days = max_day
 	house.Ctime = time.Now()
 
 	facility := make([]*Facility, 0)
-	for _, fac := range reqBody["facility"].([]string) {
-		f_id, _ := strconv.Atoi(fac)
+	for _, fac := range reqBody["facility"].([]interface{}) {
+		f_id, _ := strconv.Atoi(fac.(string))
 		faci := &Facility{Id: f_id}
 		facility = append(facility, faci)
 	}
@@ -306,8 +306,8 @@ func (c *UserController) PostHousesData() {
 		resp["errmsg"] = RecodeText(RECODE_DBERR)
 		return
 	}
-	m2m := o.QueryM2M(&house, "Facility")
-	num, err := m2m.Add(&facility)
+	m2m := o.QueryM2M(&house, "facilities")
+	num, err := m2m.Add(facility)
 	if num == 0 || err != nil {
 		beego.Error("GetHousesData insert facility err: ", err)
 		resp["errno"] = RECODE_DBERR
